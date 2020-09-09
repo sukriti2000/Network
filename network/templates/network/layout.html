@@ -1,0 +1,108 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+
+        <title>{% block title %}Social Network{% endblock %}</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link href="{% static 'network/styles.css' %}" rel="stylesheet">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+        {% block style %}
+        {% endblock %}
+        <style>
+
+            .head{
+                display: flex;
+                width: 100vw;
+                position: fixed;
+                top:0;
+                left:0;
+                height: 100px;
+                background-color: red;
+                justify-content: space-between;
+                align-content: center;
+                align-items: center;
+                padding : 0 6% 0 4%;
+                background-color: black;
+                z-index : 100;
+                color : white;
+               font-family: 'Montserrat', sans-serif;
+
+            }
+            .navbar-heading h1{
+                font-weight : 700;
+            }
+            .navbar-links{
+                color : white;
+            }
+            .navbar-links a{
+                display: inline-block;
+                text-decoration: none;
+                color: white;
+
+            }
+            .navbar-links li{
+                display: inline-block;
+                border-bottom: 2px solid transparent;
+                transition: 0.5s ease;
+            }
+            .navbar-links li:hover{
+                border-bottom: 2px solid #ff4dff;
+            }
+            .navbar-links a:hover{
+                color : #ff4dff;
+            }
+            .nav-item li{
+                display: inline-block;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="head">
+            <div class="navbar-heading">
+       
+            <h1>Network</h1>
+            </div>
+         
+            <div class="navbar-links" >
+              <ul >
+                {% if user.is_authenticated %}
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'profile' user.username %}"><strong>{{ user.username }}</strong></a>
+                    </li>
+                {% endif %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'index' %}">All Posts</a>
+                </li>
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'following' %}">Following</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
+                    </li>
+
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Log In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">Register</a>
+                    </li>
+                {% endif %}
+              </ul>
+            </div>
+          
+        </div>
+        <div class="body" style="margin-top: 150px;">
+            {% block body %}
+            {% endblock %}
+        </div>
+        <div>
+            {% block script %}
+            {% endblock %}
+        </div>
+    </body>
+</html>

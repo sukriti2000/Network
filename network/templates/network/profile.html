@@ -1,0 +1,166 @@
+
+{% extends "network/layout.html" %}
+{% load static %}
+{% block style %}
+<style>
+	.post_div{
+            width: 70%;
+            border:1px solid #999;
+            border-radius: 10px;
+            margin:2% auto;
+            box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); 
+            padding: 10px;
+        }
+        .name_box{
+        	margin-top: 30px;
+        	border-radius: 5px;
+        	height:300px;
+        	width:500px;
+        	background-color: #4d4d4d;
+        	color: white;
+        	margin-left: 550px;;
+        }
+        .edit{
+            font-size: 20px;
+            float: right;
+        }
+        .edit :hover{
+            cursor: pointer;
+
+</style>
+{% endblock %}
+{% block script %}
+ <script >
+ 	function Edit(x) {
+            x.hidden="true";
+            const Parent_id=x.parentElement.id;
+            console.log(x.parentElement.children[2]);
+            const post_value=x.parentElement.children[2].innerHTML;
+            x.parentElement.children[2].innerHTML="";
+            const new_textarea=document.createElement("textarea");
+            new_textarea.className="new_textarea";
+            new_textarea.value=post_value;
+            x.parentElement.children[2].append(new_textarea);
+            const br=document.createElement("br");
+            x.parentElement.children[2].append(br);
+            const button=document.createElement("button");
+            button.innerHTML="SAVE";
+            x.parentElement.children[2].append(button);
+            button.addEventListener('click',function(){
+                const new_post=new_textarea.value;
+                fetch(`/updatePost/${Parent_id}/${new_post}`)
+                .then(response => response.text())
+                .then(text=>{
+                    console.log(text);
+                    x.parentElement.children[2].innerHTML=new_post;
+                    x.hidden=false;
+                })
+                
+            });
+           }
+ 	const Id=document.querySelector(".user_id").innerHTML;
+    function update(Id){
+    	fetch(`/update_follower/${Id}`)
+    	.then(response => response.text())
+    	.then(text =>{
+    		console.log(text);
+    		document.querySelector(".my_followers").innerHTML=text;
+
+    	});
+    	
+    }
+ 	function add_follower() {
+ 		const value=document.querySelector(".follow-btn").innerHTML;
+ 		console.log(value);
+ 		const id=document.querySelector(".user_id").innerHTML;
+ 		if(value ==='Follow'){
+ 			fetch(`/add_follower/${id}`)
+ 			.then(response => response.text())
+ 			.then(text=> {
+ 				console.log(text);
+ 				update(id);
+ 			});
+ 			document.querySelector(".follow-btn").innerHTML="Unfollow";
+ 		}else{
+ 			fetch(`/add_follower/${id}`)
+ 			.then(response => response.text())
+ 			.then(text=> {
+ 				console.log(text);
+ 				update(id);
+ 			});
+ 			document.querySelector(".follow-btn").innerHTML="Follow";
+ 		}
+ 	}
+ 	  function button_change(x){
+            const type=x.style.color;
+            const id=x.parentElement.id;
+            console.log(type);
+            if(type === 'black'){
+                fetch(`/add_like/${id}`)
+                .then(response => response.text())
+                .then(text =>{
+                    console.log(text);
+                })
+                x.style.color="red";
+                let counter=x.parentElement.lastElementChild.innerHTML;
+                counter++;
+                x.parentElement.lastElementChild.innerHTML=counter;
+            }
+            else{
+                fetch(`/add_like/${id}`)
+                .then(response => response.text())
+                .then(text =>{
+                    console.log(text);
+                })
+                x.style.color="black";
+                let counter=x.parentElement.lastElementChild.innerHTML;
+                counter--;
+                x.parentElement.lastElementChild.innerHTML=counter;
+            }
+        }
+ </script>
+{% endblock %}
+{% block body %}
+ <div class="name_box">
+ 	<div class="count">
+ 		<img  src="{% static 'network/login.png' %}" style="border-radius: 20px;height: 100px; width: 100px;margin-left: 200px;padding-top: 20px;">
+	 <p style="text-align: center;padding-top: 10px;font-size: 28px;">{{current.username|title}}<p>
+	  <div style="margin-left: 20px;"> followers<p class="my_followers" > {{follower_count}}</p></div>
+       <div style="float: right; margin-top: -65px;margin-right: 20px;"> following  <p >{{following_count}}</p></div><br>
+
+</div>
+ <div class="follow_button">
+ 	<p class="user_id" hidden="true">{{current.id}}</p>
+ 	{% if current.username == user.username %}
+ 	<br>
+ 	{% else %}
+ 		{% if check == 0 %}
+ 	   <button class="follow-btn"  style="margin-left: 220px; " onclick="add_follower()">Follow</button>
+ 		{% else %}
+ 		<button  class="follow-btn" style="margin-left: 220px;" onclick="add_follower()">Unfollow</button>
+ 	 	{% endif %}
+ 	{% endif %}
+ </div>
+
+</div>
+ 
+ 	
+ 	 {% for p in user_post %}
+ 	 <div class="post_div" id="{{p.id}}">
+ 	 	 {% if p.user == request.user %}
+            <a class="edit" onclick="Edit(this)">Edit <i class="fa fa-pencil" aria-hidden="true"></i></a>&nbsp
+        {% endif %}
+ 	 	{{current.username|title}} 
+ 	  <p> {{p.post}}</p>
+ 	     <p style="color: #bfbfbf">{{p.date_time}}</p>
+ 	  {%  if list.id in lists %}
+    <i class="fa fa-heart" aria-hidden="true" onclick="button_change(this)" style="color: red;"></i>
+    {% else %}
+    <i class="fa fa-heart" aria-hidden="true" onclick="button_change(this)" style="color: black;"></i>
+    {% endif %}
+    <p>{{p.post_liked.count}}</p>
+   
+ 	    </div>
+ 	 {% endfor %}
+
+{% endblock %}

@@ -1,0 +1,151 @@
+
+{% extends "network/layout.html" %}
+    {% block style %}
+    <style>
+        .pagination{
+            float: right;
+            margin-top: 30px;
+            margin-right: 20px;
+        }
+        .Post_div{
+            width: 70%;
+            border:1px solid #999;
+            border-radius: 10px;
+            margin:2% auto;
+            box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); 
+            padding: 10px;
+        }
+        .post_form{
+            width:70%;
+            margin:5% auto;
+
+        }
+        .post_form textarea{
+            width: 100%;
+            height: 200px;
+            background-color: #f2f2f2;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        .edit{
+            font-size: 20px;
+            float: right;
+        }
+        .edit  :hover{
+            cursor: pointer;
+        }
+    </style>
+    {% endblock %}
+    {% block script %}
+    <script>
+        function Edit(x) {
+            x.hidden="true";
+            const Parent_id=x.parentElement.id;
+            console.log(x.parentElement.children[2]);
+            const post_value=x.parentElement.children[2].innerHTML;
+            x.parentElement.children[2].innerHTML="";
+            const new_textarea=document.createElement("textarea");
+            new_textarea.className="new_textarea";
+            new_textarea.value=post_value;
+            x.parentElement.children[2].append(new_textarea);
+            const br=document.createElement("br");
+            x.parentElement.children[2].append(br);
+            const button=document.createElement("button");
+            button.innerHTML="SAVE";
+            x.parentElement.children[2].append(button);
+            button.addEventListener('click',function(){
+                const new_post=new_textarea.value;
+                fetch(`/updatePost/${Parent_id}/${new_post}`)
+                .then(response => response.text())
+                .then(text=>{
+                    console.log(text);
+                    x.parentElement.children[2].innerHTML=new_post;
+                    x.hidden=false;
+                })
+                
+            });
+           }
+              
+           
+
+        function button_change(x){
+            const type=x.style.color;
+            const id=x.parentElement.id;
+            console.log(type);
+            if(type === 'black'){
+                fetch(`/add_like/${id}`)
+                .then(response => response.text())
+                .then(text =>{
+                    console.log(text);
+                })
+                x.style.color="red";
+                let counter=x.parentElement.lastElementChild.innerHTML;
+                counter++;
+                x.parentElement.lastElementChild.innerHTML=counter;
+            }
+            else{
+                fetch(`/add_like/${id}`)
+                .then(response => response.text())
+                .then(text =>{
+                    console.log(text);
+                })
+                x.style.color="black";
+                let counter=x.parentElement.lastElementChild.innerHTML;
+                counter--;
+                x.parentElement.lastElementChild.innerHTML=counter;
+            }
+        }
+    </script>
+    {% endblock %}
+
+{% block body %} 
+     <div class="pagination">
+            {% if All_post.has_previous %}
+            <a href="?page={{All_post.previous_page_number}}"><button class="btn btn-primary" ><i class="fa fa-angle-left" aria-hidden="true"></i> &nbsp Previous</button> </a>&nbsp
+            
+            {% endif %}
+           
+            {% if All_post.has_next %}
+            <a href="?page={{All_post.next_page_number}}">
+                <button class="btn btn-primary">next &nbsp <i class="fa fa-angle-right" aria-hidden="true"></i></button>
+            </a>
+            {% endif %}
+    </div>
+    {% if user.is_authenticated %}
+    <div class="post_form">
+            <h5>Add New post</h5>
+            <form action="{% url 'add_post' %}" method="post">
+            {% csrf_token %}
+                <textarea name="post_added" ></textarea>
+                <button class="btn btn-primary" type="submit" style="margin-left: 20px; ">POST</button>
+            </form>
+    </div>
+
+    <hr>
+    {% endif %}
+   
+    {% for list in All_post %}
+    <div  class="Post_div" id="{{list.id}}">
+        {% if list.user == request.user %}
+           <a class="edit"  onclick="Edit(this)">Edit <i class="fa fa-pencil" aria-hidden="true"></i></a>&nbsp
+        {% endif %}
+    	{% if user.is_authenticated %}
+    	<p><a href="{% url 'profile' list.user %}">{{list.user}}</a></p>
+        {% else %}
+         <p style="color: blue;">{{list.user}}</p>
+         {% endif %}
+        <p class="post_id">{{list.post}}</p>
+    	<p>{{list.date_time}}</p>
+        {% if user.is_authenticated %}
+        {%  if list.id in lists %}
+        <i class="fa fa-heart" aria-hidden="true" onclick="button_change(this)" style="color: red;"></i>
+        {% else %}
+        <i class="fa fa-heart" aria-hidden="true" onclick="button_change(this)" style="color: black;"></i>
+        {% endif %}
+        {% endif %}
+        <p>{{list.post_liked.count}}</p>
+    
+     </div>
+    
+    {% endfor %}
+{% endblock %}
